@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-heading">
+    <h1>Estadísticas</h1>
+  </section>
+
+  <section class="metrics-grid">
+    {% for metric in metrics %}
+      <article class="metric-card">
+        <img src="{{ url_for('asset', filename=metric.icon) }}" alt="">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="panel chart-panel" style="min-height: 380px;">
+      <h2>Ganancias vs Gastos (Últimos 7 Días)</h2>
+      <div style="position: relative; height: 280px; margin-top: 15px;">
+        <canvas id="salesChart"></canvas>
+      </div>
+    </article>
+
+    <article class="panel chart-panel" style="min-height: 380px;">
+      <h2>Productos Más Vendidos (Ranking)</h2>
+      <div style="position: relative; height: 280px; margin-top: 15px;">
+        <canvas id="productsChart"></canvas>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel orders-panel" style="margin-top: 30px; min-height: auto;">
+    <div class="panel-head" style="margin-bottom: 20px;">
+      <h2>Pedidos Recientes</h2>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Mesa</th>
+          <th>Mesero</th>
+          <th>Total</th>
+          <th>Hora</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pedido in pedidos %}
+          <tr>
+            <td><strong>#{{ pedido.id }}</strong></td>
+            <td>Mesa {{ pedido.mesa }}</td>
+            <td>{{ pedido.mesero }}</td>
+            <td><strong>${{ "{:,.2f}".format(pedido.total|float) }}</strong></td>
+            <td>{{ pedido.hora }}</td>
+            <td>
+              <span class="status-badge {% if pedido.estado == 'PAGADO' %}ok{% elif pedido.estado == 'CANCELADO' %}muted{% else %}process{% endif %}">
+                {{ pedido.estado }}
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+        {% if not pedidos %}
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--muted); padding: 20px;">No hay pedidos registrados hoy.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // 1. Gráfica de Ganancias vs Gastos
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const salesLabels = {{ chart_sales|map(attribute='dia_semana')|list|tojson }};
+    const salesData = {{ chart_sales|map(attribute='ganancias')|map('float')|list|tojson }};
+    const expensesData = {{ chart_sales|map(attribute='gastos')|map('float')|list|tojson }};
+
+    new Chart(salesCtx, {
+      type: 'bar',
+      data: {
+        labels: salesLabels,
+        datasets: [
+          {
+            label: 'Ganancias',
+            data: salesData,
+            backgroundColor: '#a14f33',
+            borderColor: '#73351f',
+            borderWidth: 1
+          },
+          {
+            label: 'Gastos',
+            data: expensesData,
+            backgroundColor: '#eadccb',
+            borderColor: '#b89d8c',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#3b1c13',
+              font: { family: 'Inter', weight: 'bold' }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#8a6b5c' },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#8a6b5c',
+              callback: function(value) { return '$' + value; }
+            },
+            grid: { color: '#eadccb' }
+          }
+        }
+      }
+    });
+
+    // 2. Gráfica de Productos Más Vendidos
+    const productsCtx = document.getElementById('productsChart').getContext('2d');
+    const productLabels = {{ chart_products|map(attribute='nombre_producto')|list|tojson }};
+    const productData = {{ chart_products|map(attribute='total_vendido')|list|tojson }};
+
+    if (productLabels.length === 0) {
+      productsCtx.font = '14px Inter';
+      productsCtx.fillStyle = '#8a6b5c';
+      productsCtx.textAlign = 'center';
+      productsCtx.fillText('Sin datos de ventas aún', productsCtx.canvas.width / 2, 140);
+    } else {
+      new Chart(productsCtx, {
+        type: 'doughnut',
+        data: {
+          labels: productLabels,
+          datasets: [{
+            data: productData,
+            backgroundColor: ['#a14f33', '#73351f', '#d4ad88', '#eadccb', '#8a6b5c'],
+            borderColor: '#fffdf8',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: '#3b1c13',
+                font: { family: 'Inter', size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="title-actions">
+    <h1>Gestion de Usuarios</h1>
+    <a
+      class="primary add-button"
+      href="{{ url_for('agregar_usuario') }}"
+      data-confirm="Vas a abrir el formulario para agregar un nuevo usuario. ¿Deseas continuar?">＋ Nuevo Usuario</a>
+  </section>
+
+  <section class="panel large-panel">
+    <div class="panel-head">
+      <h2>Usuarios del Sistema</h2>
+      <div class="search">
+        <span>⌕</span>
+        <input id="userSearch" type="search" placeholder="Buscar usuario..." oninput="filtrarUsuarios()">
+      </div>
+    </div>
+    <table class="data-table" id="usersTable">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Último Acceso</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for usuario in usuarios %}
+          <tr>
+            <td>{{ usuario.nombre }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.rol }}</td>
+            <td class="{% if usuario.estado == 'Activo' %}ok{% else %}muted{% endif %}">{{ usuario.estado }}</td>
+            <td>{{ usuario.ultimo_acceso }}</td>
+            <td class="actions-cell">
+              <a
+                href="{{ url_for('editar_usuario', user_id=usuario.id) }}"
+                aria-label="Editar usuario"
+                data-confirm="Vas a abrir la edición de {{ usuario.nombre }}. ¿Deseas continuar?">
+                <img src="{{ url_for('asset', filename='Editar.png') }}" alt="">
+              </a>
+              <form
+                method="post"
+                action="{{ url_for('eliminar_usuario', user_id=usuario.id) }}"
+                data-confirm="Vas a eliminar a {{ usuario.nombre }} del sistema. ¿Deseas continuar?">
+                <button type="submit" aria-label="Eliminar usuario">
+                  <img src="{{ url_for('asset', filename='Eliminar.png') }}" alt="">
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="pagination" id="usersPagination"></div>
+  </section>
+
+  <script>
+    const ROWS_PER_PAGE = 5;
+    let currentPage = 1;
+    const table = document.getElementById('usersTable');
+    const tbody = table.querySelector('tbody');
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    let filteredRows = [...allRows];
+
+    function filtrarUsuarios() {
+      const query = document.getElementById('userSearch').value.toLowerCase();
+      filteredRows = allRows.filter(row => row.textContent.toLowerCase().includes(query));
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderPage() {
+      const totalPages = Math.max(1, Math.ceil(filteredRows.length / ROWS_PER_PAGE));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * ROWS_PER_PAGE;
+      const end = start + ROWS_PER_PAGE;
+
+      allRows.forEach(r => r.style.display = 'none');
+      filteredRows.slice(start, end).forEach(r => r.style.display = '');
+
+      const pag = document.getElementById('usersPagination');
+      let html = '';
+      html += '<span class="pag-btn" onclick="goPage(' + (currentPage - 1) + ')" style="cursor:pointer;">&lsaquo;</span>';
+      for (let i = 1; i <= totalPages; i++) {
+        html += '<span class="pag-btn' + (i === currentPage ? ' active' : '') + '" onclick="goPage(' + i + ')" style="cursor:pointer;">' + i + '</span>';
+      }
+      html += '<span class="pag-btn" onclick="goPage(' + (currentPage + 1) + ')" style="cursor:pointer;">&rsaquo;</span>';
+      pag.innerHTML = html;
+    }
+
+    function goPage(p) {
+      const totalPages = Math.max(1, Math.ceil(filteredRows.length / ROWS_PER_PAGE));
+      if (p < 1 || p > totalPages) return;
+      currentPage = p;
+      renderPage();
+    }
+
+    renderPage();
+  </script>
+{% endblock %}

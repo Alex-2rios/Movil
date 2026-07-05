@@ -1,0 +1,209 @@
+{
+  "info": {
+    "name": "Terracota API - Flujo móvil",
+    "description": "Pruebas de los módulos Mesero, Cocina y Caja. Ejecutar en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test('Respuesta exitosa', () => pm.expect(pm.response.code).to.be.below(400));",
+          "pm.test('Respuesta JSON', () => pm.response.to.be.json);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Sistema",
+      "item": [
+        {
+          "name": "Health",
+          "request": { "method": "GET", "url": "http://localhost:8080/health" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('API disponible', () => pm.response.to.have.status(200));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Login Mesero",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "username", "value": "luis.mesero@terracota.com" }, { "key": "password", "value": "mesero123" }] },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login mesero', () => pm.response.to.have.status(200));", "pm.environment.set('meseroToken', pm.response.json().access_token);"] } }]
+        },
+        {
+          "name": "Login Cocina",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "username", "value": "maria.cocina@terracota.com" }, { "key": "password", "value": "cocina123" }] },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login cocina', () => pm.response.to.have.status(200));", "pm.environment.set('cocinaToken', pm.response.json().access_token);"] } }]
+        },
+        {
+          "name": "Login Caja",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "username", "value": "ana.caja@terracota.com" }, { "key": "password", "value": "caja123" }] },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login caja', () => pm.response.to.have.status(200));", "pm.environment.set('cajaToken', pm.response.json().access_token);"] } }]
+        },
+        {
+          "name": "Login Administrador",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "username", "value": "admin" }, { "key": "password", "value": "admin123" }] },
+            "url": "{{baseUrl}}/auth/token"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login administrador', () => pm.response.to.have.status(200));", "pm.environment.set('adminToken', pm.response.json().access_token);"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Administración (API preparada para gestión)",
+      "item": [
+        {
+          "name": "Consultar roles",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] }, "url": "{{baseUrl}}/administracion/roles" }
+        },
+        {
+          "name": "Consultar usuarios",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] }, "url": "{{baseUrl}}/administracion/usuarios" }
+        },
+        {
+          "name": "Crear usuario de prueba",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mesero Postman\",\n  \"usuario\": \"mesero.postman.{{$timestamp}}\",\n  \"password\": \"Cambiar123!\",\n  \"roles\": [\"mesero\"]\n}" },
+            "url": "{{baseUrl}}/administracion/usuarios"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) pm.environment.set('usuarioId', pm.response.json().id);"] } }]
+        },
+        {
+          "name": "Actualizar roles de usuario",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"roles\": [\"mesero\", \"cocina\"]\n}" },
+            "url": "{{baseUrl}}/administracion/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Resumen de estadísticas",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] }, "url": "{{baseUrl}}/administracion/estadisticas/resumen" }
+        }
+      ]
+    },
+    {
+      "name": "Mesero",
+      "item": [
+        {
+          "name": "Consultar mesas",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{meseroToken}}", "type": "string" }] }, "url": "{{baseUrl}}/catalogos/mesas" }
+        },
+        {
+          "name": "Consultar productos",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{meseroToken}}", "type": "string" }] }, "url": "{{baseUrl}}/catalogos/productos" }
+        },
+        {
+          "name": "Crear pedido",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{meseroToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"mesa\": 1,\n  \"items\": [\n    {\"producto_clave\": \"moka-frappe\", \"cantidad\": 1, \"observacion\": \"Sin azúcar\"}\n  ]\n}" },
+            "url": "{{baseUrl}}/mesero/pedidos"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Pedido creado', () => pm.response.to.have.status(201));", "pm.environment.set('pedidoId', pm.response.json().id);"] } }]
+        }
+      ]
+    },
+    {
+      "name": "Cocina",
+      "item": [
+        {
+          "name": "Pedidos de cocina",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cocinaToken}}", "type": "string" }] }, "url": "{{baseUrl}}/cocina/pedidos" }
+        },
+        {
+          "name": "Iniciar preparación",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cocinaToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"estado\": \"PREPARANDO\"}" },
+            "url": "{{baseUrl}}/cocina/pedidos/{{pedidoId}}/estado"
+          }
+        },
+        {
+          "name": "Marcar listo",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cocinaToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"estado\": \"LISTO\"}" },
+            "url": "{{baseUrl}}/cocina/pedidos/{{pedidoId}}/estado"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Entrega",
+      "item": [
+        {
+          "name": "Mesero marca entregado",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{meseroToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"estado\": \"ENTREGADO\"}" },
+            "url": "{{baseUrl}}/mesero/pedidos/{{pedidoId}}/entregar"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Caja",
+      "item": [
+        {
+          "name": "Pedidos pendientes de pago",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cajaToken}}", "type": "string" }] }, "url": "{{baseUrl}}/caja/pedidos-pendientes" }
+        },
+        {
+          "name": "Registrar pago",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cajaToken}}", "type": "string" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pedido_id\": {{pedidoId}},\n  \"metodo\": \"EFECTIVO\",\n  \"monto_recibido\": 500\n}" },
+            "url": "{{baseUrl}}/caja/pagos"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Pago registrado', () => pm.response.to.have.status(201));"] } }]
+        },
+        {
+          "name": "Consultar tickets",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cajaToken}}", "type": "string" }] }, "url": "{{baseUrl}}/caja/tickets" }
+        },
+        {
+          "name": "Ventas del día",
+          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{cajaToken}}", "type": "string" }] }, "url": "{{baseUrl}}/caja/ventas/hoy" }
+        }
+      ]
+    }
+  ]
+}

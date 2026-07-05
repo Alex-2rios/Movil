@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="login-page">
+    <img class="login-logo-img" src="{{ url_for('asset', filename='logoOscuro.png') }}" alt="Terracota">
+    <form class="login-card" method="post">
+      <h1>Iniciar Sesión</h1>
+      <div class="login-line"></div>
+      <div class="divider-label">
+        <span></span>
+        <strong>Con Correo</strong>
+        <span></span>
+      </div>
+      <label class="field-label" for="correo">Usuario / Correo</label>
+      <div class="input-icon">
+        <img src="{{ url_for('asset', filename='Correo.png') }}" alt="">
+        <input id="correo" name="correo" type="text" placeholder="admin / correo@terracota.com" required>
+      </div>
+      <label class="field-label" for="password">Contraseña</label>
+      <div class="input-icon">
+        <img src="{{ url_for('asset', filename='Candado.png') }}" alt="">
+        <input id="password" name="password" type="password" placeholder="••••••••" required>
+        <img src="{{ url_for('asset', filename='OjoTachado.png') }}" alt="" id="togglePassword" style="cursor: pointer;">
+      </div>
+      <button class="primary wide" type="submit">Ingresar</button>
+    </form>
+  </section>
+
+  <script>
+    const toggle = document.getElementById('togglePassword');
+    const passInput = document.getElementById('password');
+    toggle.addEventListener('click', function() {
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+      } else {
+        passInput.type = 'password';
+      }
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-heading">
+    <h1>{{ page_title }}</h1>
+  </section>
+
+  <form
+    class="form-card product-card"
+    method="post"
+    data-confirm="Vas a {{ action_label|lower }} en la maqueta. ¿Deseas confirmar la acción?">
+    <div class="form-title">
+      <img src="{{ url_for('asset', filename='Pedidos.png') }}" alt="">
+      <h2>Información Del producto</h2>
+    </div>
+    <div class="form-grid">
+      <label>
+        <span>Nombre del Producto</span>
+        <input name="producto" value="{{ producto.producto }}" placeholder="Nombre del producto" required>
+      </label>
+      <label>
+        <span>Categoría</span>
+        <select name="categoria">
+          {% for categoria in ["Bebidas", "Comida", "Panadería", "Postres"] %}
+            <option {% if categoria|lower == producto.categoria %}selected{% endif %}>{{ categoria }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Stock Actual</span>
+        <input name="stock_actual" type="number" value="{{ producto.stock_actual }}" placeholder="Ej: 50" required>
+      </label>
+      <label>
+        <span>Stock Mínimo</span>
+        <input name="stock_minimo" type="number" value="{{ producto.stock_minimo }}" placeholder="Ej: 15" required>
+      </label>
+      <label>
+        <span>Precio Unitario</span>
+        <input name="precio" type="number" step="0.01" value="{{ producto.precio }}" placeholder="Ej: 45.00" required>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="primary" type="submit">{{ action_label }}</button>
+      <a href="{{ url_for('inventario') }}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-heading">
+    <h1>{{ page_title }}</h1>
+  </section>
+
+  <form
+    class="form-card user-card"
+    method="post"
+    data-confirm="Vas a {{ action_label|lower }} en la maqueta. ¿Deseas confirmar la acción?">
+    <div class="form-title">
+      <img src="{{ url_for('asset', filename='Usuario.png') }}" alt="">
+      <h2>Información Personal</h2>
+    </div>
+    <div class="form-grid">
+      <label>
+        <span>Nombre Completo</span>
+        <input name="nombre" value="{{ usuario.nombre }}">
+      </label>
+      <label>
+        <span>Email</span>
+        <input name="email" value="{{ usuario.email }}">
+      </label>
+      <label>
+        <span>Teléfono</span>
+        <input name="telefono" value="{{ usuario.telefono }}">
+      </label>
+      <label>
+        <span>Rol</span>
+        <select name="rol">
+          {% for rol in ["Administrador", "Mesero", "Cocina", "Cajero"] %}
+            <option {% if rol == usuario.rol %}selected{% endif %}>{{ rol }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Contraseña</span>
+        <input name="password" type="password" placeholder="Ingresa la contraseña" required>
+      </label>
+      <label>
+        <span>Confirmar Contraseña</span>
+        <input name="confirmacion" type="password" placeholder="Repite la contraseña" required>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="primary" type="submit">{{ action_label }}</button>
+      <a href="{{ url_for('usuarios') }}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

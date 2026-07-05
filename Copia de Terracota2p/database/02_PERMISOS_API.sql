@@ -1,0 +1,21 @@
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'terracota_app') THEN
+    CREATE ROLE terracota_app LOGIN PASSWORD 'TerracotaLocal123!';
+  END IF;
+END
+$$;
+
+ALTER ROLE terracota_app PASSWORD 'TerracotaLocal123!';
+GRANT CONNECT ON DATABASE terracota TO terracota_app;
+GRANT USAGE ON SCHEMA terracota TO terracota_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA terracota TO terracota_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA terracota TO terracota_app;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA terracota TO terracota_app;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA terracota
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO terracota_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA terracota
+  GRANT USAGE, SELECT ON SEQUENCES TO terracota_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA terracota
+  GRANT EXECUTE ON FUNCTIONS TO terracota_app;

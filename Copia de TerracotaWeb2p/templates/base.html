@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Terracota | {{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body class="{% if hide_nav %}login-body{% endif %}">
+    {% if not hide_nav %}
+      <header class="topbar">
+        <a class="brand brand-logo" href="{{ url_for('inicio') }}">
+          <img src="{{ url_for('asset', filename='logoOscuro.png') }}" alt="Terracota">
+        </a>
+        <nav class="nav">
+          <a class="{% if active_page == 'inicio' %}active{% endif %}" href="{{ url_for('inicio') }}">Inicio</a>
+          <a class="{% if active_page == 'usuarios' %}active{% endif %}" href="{{ url_for('usuarios') }}">Usuarios</a>
+          <a class="{% if active_page == 'reportes' %}active{% endif %}" href="{{ url_for('reportes') }}">Reportes</a>
+          <a class="{% if active_page == 'inventario' %}active{% endif %}" href="{{ url_for('inventario') }}">Inventario</a>
+        </nav>
+        <div class="admin">
+          <strong>{{ admin_user }}</strong>
+          <span>{{ admin_email }}</span>
+        </div>
+        <a class="logout" href="{{ url_for('login') }}" aria-label="Cerrar sesión">
+          <img src="{{ url_for('asset', filename='Salir.png') }}" alt="">
+        </a>
+      </header>
+    {% endif %}
+    <main class="{% if hide_nav %}login-shell{% else %}page-shell{% endif %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages" style="margin-bottom: 20px; font-size: 13px;">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}" style="padding: 12px 18px; border-radius: 8px; margin-bottom: 10px; font-weight: 600; {% if category == 'error' %}background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;{% else %}background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+    <div class="confirm-overlay" id="confirmOverlay" aria-hidden="true">
+      <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle">Confirmar acción</h2>
+        <p id="confirmMessage">¿Deseas continuar?</p>
+        <div class="confirm-actions">
+          <button class="ghost-button" type="button" id="cancelConfirm">Cancelar</button>
+          <button class="primary" type="button" id="acceptConfirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='confirm.js') }}"></script>
+  </body>
+</html>

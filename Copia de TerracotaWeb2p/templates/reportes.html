@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-heading">
+    <h1>Reportes</h1>
+  </section>
+
+  <form
+    class="report-card"
+    method="post"
+    action="{{ url_for('exportar_reporte') }}"
+    data-confirm="¿Deseas generar y exportar el reporte seleccionado?">
+    <input type="hidden" name="destino" value="reportes">
+    <input id="tipoReporte" type="hidden" name="tipo_reporte" value="ventas">
+
+    <h2>Generar Nuevo Reporte</h2>
+    <span class="subtle">Tipo de Reporte</span>
+
+    <div class="report-types">
+      {% for item in [
+        ("ventas", "Reporte de Ventas.png", "Reporte de Ventas", "Resumen de ventas y transacciones", "selected"),
+        ("usuarios", "Reporte de usuario.png", "Reporte de Usuarios", "Actividad y roles del personal", ""),
+        ("inventario", "Reporte de Inventario.png", "Reporte de Inventario", "Estado actual del inventario", "")
+      ] %}
+        <button
+          class="report-type {{ item[4] }}"
+          type="button"
+          data-report="{{ item[0] }}"
+          aria-pressed="{% if item[4] %}true{% else %}false{% endif %}">
+          <img src="{{ url_for('asset', filename=item[1]) }}" alt="">
+          <strong>{{ item[2] }}</strong>
+          <small>{{ item[3] }}</small>
+        </button>
+      {% endfor %}
+    </div>
+
+    <div class="report-summary" id="reportSummary">
+      Ventas detalladas por periodo. Incluye pedidos completados, totales y métodos de pago.
+    </div>
+
+    <h3 class="section-icon-title">
+      <img src="{{ url_for('asset', filename='Calendario.png') }}" alt="">
+      Rango de Fechas
+    </h3>
+    <div class="form-grid compact">
+      <label>
+        <span>Fecha Inicio</span>
+        <div class="date-input">
+          <input id="fechaInicio" name="fecha_inicio" type="date" value="2026-07-01">
+        </div>
+      </label>
+      <label>
+        <span>Fecha Fin</span>
+        <div class="date-input">
+          <input id="fechaFin" name="fecha_fin" type="date" value="2026-07-04">
+        </div>
+      </label>
+    </div>
+
+    <h3>Filtros Adicionales</h3>
+    <div class="form-grid compact">
+      <label>
+        <span>Categoría</span>
+        <select id="categoriaReporte" name="categoria">
+          <option>Reporte de Ventas</option>
+          <option>Ventas por día</option>
+          <option>Métodos de pago</option>
+        </select>
+      </label>
+      <label>
+        <span>Estado</span>
+        <select id="estadoReporte" name="estado">
+          <option>Todos</option>
+          <option>Completado</option>
+          <option>En proceso</option>
+          <option>Cancelado</option>
+        </select>
+      </label>
+    </div>
+
+    <h3>Formato de Exportación</h3>
+    <div class="export-actions">
+      <button class="file-button" type="submit" name="formato" value="pdf" aria-label="Exportar PDF">
+        <img src="{{ url_for('asset', filename='PDF.png') }}" alt="">
+      </button>
+      <button class="file-button" type="submit" name="formato" value="xlsx" aria-label="Exportar XLSX">
+        <img src="{{ url_for('asset', filename='XLSX.png') }}" alt="">
+      </button>
+    </div>
+    <p class="export-hint" id="exportHint">Formato recomendado: PDF para presentar ventas del periodo.</p>
+  </form>
+
+  <script src="{{ url_for('static', filename='reportes.js') }}"></script>
+{% endblock %}
