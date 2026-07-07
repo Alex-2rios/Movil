@@ -45,7 +45,7 @@ export const navegacionPorRol = {
     { clave: 'inicio', etiqueta: 'Inicio', icono: 'home' },
     { clave: 'crear', etiqueta: 'Pedidos', icono: 'pedidos' },
     { clave: 'estado', etiqueta: 'Estado', icono: 'estado' },
-    { clave: 'mesa', etiqueta: 'Mesa', icono: 'mesa' },
+    { clave: 'listos', etiqueta: 'Listos', icono: 'pedidosListos' },
   ],
   caja: [
     { clave: 'inicio', etiqueta: 'Inicio', icono: 'home' },
@@ -56,6 +56,8 @@ export const navegacionPorRol = {
   cocina: [
     { clave: 'inicio', etiqueta: 'Inicio', icono: 'home' },
     { clave: 'pendientes', etiqueta: 'Pedidos', icono: 'pedidos' },
+    { clave: 'preparacion', etiqueta: 'Preparando', icono: 'estadoOscuro' },
+    { clave: 'listos', etiqueta: 'Listos', icono: 'pedidosListos' },
   ],
 };
 
