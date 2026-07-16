@@ -20,7 +20,7 @@
       "name": "Sistema",
       "item": [
         {
-          "name": "Health",
+          "name": "Estado del Servicio",
           "request": { "method": "GET", "url": "http://localhost:8080/health" },
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('API disponible', () => pm.response.to.have.status(200));"] } }]
         }
